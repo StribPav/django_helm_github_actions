@@ -1,0 +1,27 @@
+name: version deploy
+
+on: 
+  workflow_dispatch:
+    inputs: 
+      environment: 
+        required: true
+        default: '0.0.1'
+        description: Please select the version
+        type: choice
+        options:
+        - 0.0.1
+        - 0.0.2
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Deploy
+      uses: WyriHaximus/github-action-helm3@v3
+      with:
+        exec: helm upgrade test-app ./helm/app/ --install --wait --atomic --namespace=demo-pavel --values=./helm/app/values.yaml --set image.tag=${{ github.event.inputs.environment }}
+        kubeconfig: '${{ secrets.KUBECONFIG }}'
+        overrule_existing_kubeconfig: "true"
